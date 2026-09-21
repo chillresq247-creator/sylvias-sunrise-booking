@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TeeBakes Booking Manager</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', Arial, sans-serif; background: #0d0d1a; color: #f0f0f0; }
+    #app { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+
+    .header-bar { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid #f5c518; color: white; padding: 1rem 1.5rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; margin-bottom: 1rem; box-shadow: 0 4px 20px rgba(245,197,24,0.2); }
+    .header-logo { display: flex; align-items: center; gap: 0.8rem; }
+    .header-logo img { width: 55px; height: 55px; border-radius: 50%; border: 2px solid #f5c518; object-fit: cover; }
+    .header-logo h1 { font-family: 'Fredoka One', cursive; font-size: 1.6rem; background: linear-gradient(90deg, #f5c518, #ff6b9d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .header-logo p { font-size: 0.75rem; color: #aaa; margin-top: -4px; }
+    .button-group { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+    .btn { padding: 0.4rem 0.9rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; font-family: 'Poppins', Arial, sans-serif; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #f5c518; color: #1a1a2e; }
+    .btn-success { background: #24963f; color: white; }
+    .btn-warning { background: #e6a817; color: #1a1a1a; }
+    .btn-danger  { background: #dc2626; color: white; }
+    .btn-info    { background: #0891b2; color: white; }
+    .btn-purple  { background: #7c3aed; color: white; }
+    .btn-whatsapp { background: #25D366; color: white; }
+    .btn-sm { padding: 0.2rem 0.5rem; font-size: 0.75rem; }
+
+    .summary-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .summary-card { background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid #2a2a4e; border-radius: 10px; padding: 1rem 1.5rem; flex: 1; min-width: 140px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .summary-card h4 { font-size: 0.8rem; color: #aaa; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .week-nav { display: flex; align-items: center; justify-content: space-between; margin: 1rem 0; gap: 1rem; }
+    .week-nav strong { color: #f5c518; }
+
+    table { width: 100%; border-collapse: collapse; background: #1a1a2e; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.3); margin-bottom: 1rem; border: 1px solid #2a2a4e; }
+    th { background: linear-gradient(90deg, #1a1a2e, #16213e); color: #f5c518; padding: 0.6rem 0.4rem; font-size: 0.85rem; border-bottom: 2px solid #f5c518; }
+    td { border: 1px solid #2a2a4e; padding: 0.3rem; vertical-align: top; font-size: 0.85rem; background: #0d0d1a; }
+
+    .booking-block { border-radius: 8px; padding: 0.4rem 0.6rem; margin-bottom: 0.3rem; font-size: 0.8rem; }
+    .booking-confirmed { background: rgba(36,150,63,0.2); border-left: 3px solid #24963f; color: #a0f0b0; }
+    .booking-pending   { background: rgba(245,197,24,0.15); border-left: 3px solid #f5c518; color: #f5e090; }
+    .booking-unpaid    { background: rgba(220,38,38,0.2); border-left: 3px solid #dc2626; color: #fca5a5; }
+    .booking-block select { background: #1a1a2e; color: #f0f0f0; border: 1px solid #3a3a5e; }
+
+    .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 1rem; }
+    .month-day-header { background: linear-gradient(90deg, #1a1a2e, #16213e); color: #f5c518; text-align: center; padding: 0.4rem; font-size: 0.8rem; border-radius: 6px; border: 1px solid #f5c518; }
+    .month-day { background: #1a1a2e; border-radius: 6px; padding: 0.4rem; min-height: 80px; font-size: 0.8rem; border: 1px solid #2a2a4e; }
+    .other-month { opacity: 0.3; }
+
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: #1a1a2e; border: 1px solid #f5c518; border-radius: 12px; padding: 1.5rem; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; color: #f0f0f0; }
+    .modal-content h3 { color: #f5c518; }
+    .modal-content input, .modal-content select, .modal-content textarea { width: 100%; padding: 0.5rem; border: 1px solid #3a3a5e; border-radius: 6px; font-size: 0.9rem; background: #0d0d1a; color: #f0f0f0; font-family: 'Poppins', Arial, sans-serif; }
+
+    .form-row { display: flex; gap: 0.6rem; }
+    .form-col { flex: 1; }
+
+    .password-screen { max-width: 360px; margin: 6rem auto; background: linear-gradient(135deg, #1a1a2e, #16213e); border: 1px solid #f5c518; padding: 2rem; border-radius: 16px; text-align: center; box-shadow: 0 8px 32px rgba(245,197,24,0.2); display: flex; flex-direction: column; gap: 1rem; align-items: center; }
+    .password-screen h2 { font-family: 'Fredoka One', cursive; font-size: 1.8rem; background: linear-gradient(90deg, #f5c518, #ff6b9d); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .password-screen img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #f5c518; object-fit: cover; margin-bottom: 0.5rem; }
+    .password-screen p { color: #aaa; font-size: 0.85rem; }
+    .password-screen input { padding: 0.7rem; border: 1px solid #f5c518; border-radius: 8px; font-size: 1rem; width: 100%; background: #0d0d1a; color: #f0f0f0; text-align: center; }
+
+    .wa-client-row { padding: 0.6rem; border: 1px solid #2a2a4e; border-radius: 6px; margin-bottom: 0.4rem; display: flex; justify-content: space-between; align-items: center; background: #0d0d1a; }
+    h3 { margin: 1rem 0 0.5rem; color: #f5c518; }
+    .badge { display: inline-block; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin-left: 0.3rem; }
+    .badge-event { background: rgba(245,197,24,0.2); color: #f5c518; }
+    .badge-popup { background: rgba(255,107,157,0.2); color: #ff6b9d; }
+    p { color: #aaa; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+
+var PASSWORD = 'Tee2026';
+var LOGO_URL = 'https://iofvfvttmobamxclwspq.supabase.co/storage/v1/object/public/menu%20images/teebakes-logo.png';
+var BLANK_BOOKING = { customerId:'', date:'', type:'event', orderDetails:'', price:'', deposit:0, status:'pending', notes:'' };
+var BLANK_CUSTOMER = { name:'', phone:'', email:'', notes:'' };
+
+function toYMD(dt) {
+  return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+}
+function parseLocal(d) {
+  var p = d.split('-');
+  return new Date(Number(p[0]), Number(p[1])-1, Number(p[2]));
+}
+function formatDate(d) { return parseLocal(d).toLocaleDateString('en-GB'); }
+function addDays(d, days) { var dt = parseLocal(d); dt.setDate(dt.getDate()+days); return toYMD(dt); }
+function newId() { return String(Date.now()) + '-' + String(Math.floor(Math.random()*1000000)); }
+function cloneObj(obj) { return JSON.parse(JSON.stringify(obj)); }
+function todayMonday() { var d = new Date(); d.setDate(d.getDate()-d.getDay()+1); return toYMD(d); }
+
+function getMonthDays(y, m) {
+  var first = new Date(y, m, 1);
+  var start = new Date(first);
+  start.setDate(1 - first.getDay() + (first.getDay()===0 ? -6 : 1));
+  var days = [];
+  for (var i = 0; i < 42; i++) {
+    var d = new Date(start);
+    d.setDate(start.getDate()+i);
+    days.push({ date: toYMD(d), current: d.getMonth()===m });
+  }
+  return days;
+}
+
+function loadItems(key) {
+  var items = JSON.parse(localStorage.getItem(key) || '[]');
+  return items.map(function(x) { x.id = String(x.id); return x; });
+}
+
+var state = {
+  authenticated: false,
+  inputPass: '',
+  customers: loadItems('tb_customers'),
+  bookings: loadItems('tb_bookings'),
+  view: 'week',
+  weekStart: todayMonday(),
+  month: { y: new Date().getFullYear(), m: new Date().getMonth() },
+  showBookingForm: false,
+  showCustomerForm: false,
+  showWhatsAppList: false,
+  editingBooking: null,
+  editingCustomer: null,
+  bookingForm: cloneObj(BLANK_BOOKING),
+  customerForm: cloneObj(BLANK_CUSTOMER)
+};
+
+function saveState() {
+  localStorage.setItem('tb_customers', JSON.stringify(state.customers));
+  localStorage.setItem('tb_bookings', JSON.stringify(state.bookings));
+  render();
+}
+
+function checkPassword() {
+  if (state.inputPass === PASSWORD) {
+    state.authenticated = true;
+    state.inputPass = '';
+    saveState();
+  } else {
+    alert('Wrong password.');
+  }
+}
+
+function exportData() {
+  var json = JSON.stringify({ customers: state.customers, bookings: state.bookings }, null, 2);
+  var filename = 'teebakes-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  var a = document.createElement('a');
+  try {
+    var blob = new Blob([json], { type: 'application/json' });
+    a.href = URL.createObjectURL(blob);
+  } catch(e) {
+    a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+  }
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function importData(e) {
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var data = JSON.parse(ev.target.result);
+      if (confirm('Replace all current data with this backup?')) {
+        state.customers = data.customers.map(function(c){ c.id=String(c.id); return c; });
+        state.bookings  = data.bookings.map(function(b){ b.id=String(b.id); return b; });
+        saveState();
+      }
+    } catch(err) { alert('Invalid backup file.'); }
+  };
+  reader.readAsText(e.target.files[0]);
+}
+
+function wipeAllData() {
+  if (confirm('Delete ALL customers and bookings? Cannot be undone.')) {
+    if (confirm('Last chance — permanently delete everything?')) {
+      state.customers = [];
+      state.bookings = [];
+      saveState();
+    }
+  }
+}
+
+function sendWhatsAppBooking(bookingId) {
+  var booking = null;
+  for (var i = 0; i < state.bookings.length; i++) {
+    if (state.bookings[i].id === bookingId) { booking = state.bookings[i]; break; }
+  }
+  if (!booking) return;
+  var customer = null;
+  for (var i = 0; i < state.customers.length; i++) {
+    if (state.customers[i].id === booking.customerId) { customer = state.customers[i]; break; }
+  }
+  if (!customer) return;
+  var phone = customer.phone.replace(/[^0-9]/g, '');
+  if (phone.charAt(0) === '0') phone = '44' + phone.slice(1);
+  var typeLabel = booking.type === 'popup' ? 'pop-up' : 'event';
+  var msg = 'Hi ' + customer.name + ', this is to confirm your TeeBakes ' + typeLabel + ' booking on ' + formatDate(booking.date) + '. Order: ' + booking.orderDetails + '. Total: £' + Number(booking.price).toFixed(2) + '. Thank you!';
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function sendWhatsAppCustomer(customerId) {
+  var customer = null;
+  for (var i = 0; i < state.customers.length; i++) {
+    if (state.customers[i].id === customerId) { customer = state.customers[i]; break; }
+  }
+  if (!customer) return;
+  var latestBooking = null;
+  state.bookings.forEach(function(b) {
+    if (b.customerId === customerId && (!latestBooking || b.date > latestBooking.date)) latestBooking = b;
+  });
+  var phone = customer.phone.replace(/[^0-9]/g, '');
+  if (phone.charAt(0) === '0') phone = '44' + phone.slice(1);
+  var msg = 'Hi ' + customer.name + ', this is to confirm your TeeBakes booking';
+  if (latestBooking) msg += ' on ' + formatDate(latestBooking.date);
+  msg += '. Please reply to confirm. Thank you! - TeeBakes';
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+  state.showWhatsAppList = false;
+  saveState();
+}
+
+function saveCustomer() {
+  var f = state.customerForm;
+  if (!f.name.trim() || !f.phone.trim()) { alert('Name and Phone are required.'); return; }
+  if (state.editingCustomer) {
+    var eid = state.editingCustomer.id;
+    state.customers = state.customers.map(function(c) { return c.id===eid ? Object.assign({},f,{id:eid}) : c; });
+  } else {
+    state.customers.push(Object.assign({}, f, {id: newId()}));
+  }
+  state.showCustomerForm = false;
+  state.editingCustomer = null;
+  state.customerForm = cloneObj(BLANK_CUSTOMER);
+  saveState();
+}
+
+function editCustomer(customerId) {
+  for (var i = 0; i < state.customers.length; i++) {
+    if (state.customers[i].id === customerId) {
+      state.editingCustomer = state.customers[i];
+      state.customerForm = cloneObj(state.customers[i]);
+      state.showCustomerForm = true;
+      saveState(); return;
+    }
+  }
+}
+
+function deleteCustomer(customerId) {
+  var name = '';
+  for (var i = 0; i < state.customers.length; i++) {
+    if (state.customers[i].id === customerId) { name = state.customers[i].name; break; }
+  }
+  var hasBookings = state.bookings.some(function(b){ return b.customerId===customerId; });
+  if (confirm('Delete ' + name + '?' + (hasBookings ? ' This will also delete all their bookings.' : ''))) {
+    state.customers = state.customers.filter(function(c){ return c.id!==customerId; });
+    if (hasBookings) state.bookings = state.bookings.filter(function(b){ return b.customerId!==customerId; });
+    saveState();
+  }
+}
+
+function saveBooking() {
+  var f = state.bookingForm;
+  if (!f.customerId || !f.date || !f.orderDetails || !f.price) {
+    alert('Customer, Date, Order Details and Price are all required.');
+    return;
+  }
+  var price = Number(f.price);
+  if (isNaN(price) || price <= 0) { alert('Enter a valid price above £0.'); return; }
+  if (state.editingBooking) {
+    var eid = state.editingBooking.id;
+    state.bookings = state.bookings.map(function(b) { return b.id===eid ? Object.assign({},f,{price:price,id:eid}) : b; });
+  } else {
+    state.bookings.push(Object.assign({}, f, {price:price, id:newId()}));
+  }
+  state.showBookingForm = false;
+  state.editingBooking = null;
+  state.bookingForm = cloneObj(BLANK_BOOKING);
+  saveState();
+}
+
+function editBooking(bookingId) {
+  for (var i = 0; i < state.bookings.length; i++) {
+    if (state.bookings[i].id === bookingId) {
+      state.editingBooking = state.bookings[i];
+      state.bookingForm = cloneObj(state.bookings[i]);
+      state.showBookingForm = true;
+      saveState(); return;
+    }
+  }
+}
+
+function updateStatus(bookingId, newStatus) {
+  state.bookings = state.bookings.map(function(b) {
+    return b.id===bookingId ? Object.assign({},b,{status:newStatus}) : b;
+  });
+  saveState();
+}
+
+function deleteBooking(bookingId) {
+  if (confirm('Delete this booking?')) {
+    state.bookings = state.bookings.filter(function(b){ return b.id!==bookingId; });
+    saveState();
+  }
+}
+
+function collectAndSaveCustomer() {
+  state.customerForm.name  = document.getElementById('cf_name').value;
+  state.customerForm.phone = document.getElementById('cf_phone').value;
+  state.customerForm.email = document.getElementById('cf_email').value;
+  state.customerForm.notes = document.getElementById('cf_notes').value;
+  saveCustomer();
+}
+
+function collectAndSaveBooking() {
+  state.bookingForm.customerId   = document.getElementById('bf_customer').value;
+  state.bookingForm.date         = document.getElementById('bf_date').value;
+  state.bookingForm.type         = document.getElementById('bf_type').value;
+  state.bookingForm.orderDetails = document.getElementById('bf_order').value;
+  state.bookingForm.price        = document.getElementById('bf_price').value;
+  state.bookingForm.deposit      = Number(document.getElementById('bf_deposit').value) || 0;
+  state.bookingForm.status       = document.getElementById('bf_status').value;
+  state.bookingForm.notes        = document.getElementById('bf_notes').value;
+  saveBooking();
+}
+
+function bookingBlockHTML(booking, compact) {
+  var customer = null;
+  for (var i = 0; i < state.customers.length; i++) {
+    if (state.customers[i].id === booking.customerId) { customer = state.customers[i]; break; }
+  }
+  if (!customer) return '';
+  var cls = booking.status==='confirmed' ? 'booking-confirmed' : booking.status==='pending' ? 'booking-pending' : 'booking-unpaid';
+  var id = booking.id;
+  var typeLabel = booking.type==='popup' ? 'Pop-up' : 'Event';
+  if (compact) {
+    return '<div class="booking-block ' + cls + '">' + customer.name + ' (' + typeLabel + ')</div>';
+  }
+  return '<div class="booking-block ' + cls + '">' +
+    '<strong>' + customer.name + '</strong> <span class="badge ' + (booking.type==='popup'?'badge-popup':'badge-event') + '">' + typeLabel + '</span><br>' +
+    '<small>' + booking.orderDetails + '</small><br>' +
+    '£' + Number(booking.price).toFixed(2) + (booking.deposit > 0 ? ' (deposit: £' + Number(booking.deposit).toFixed(2) + ')' : '') + '<br>' +
+    '<small>Status: <strong>' + booking.status.charAt(0).toUpperCase() + booking.status.slice(1) + '</strong></small><br>' +
+    '<select onchange="updateStatus(\'' + id + '\', this.value)" style="font-size:0.7rem;padding:0.1rem;margin:0.2rem 0;border-radius:4px;border:1px solid #ccc">' +
+    '<option value="pending"' + (booking.status==='pending'?' selected':'') + '>Pending</option>' +
+    '<option value="confirmed"' + (booking.status==='confirmed'?' selected':'') + '>Confirmed</option>' +
+    '<option value="unpaid"' + (booking.status==='unpaid'?' selected':'') + '>Unpaid</option>' +
+    '</select><br>' +
+    '<button class="btn btn-warning btn-sm" onclick="editBooking(\'' + id + '\')">Edit</button> ' +
+    '<button class="btn btn-danger btn-sm" onclick="deleteBooking(\'' + id + '\')">Delete</button> ' +
+    '<button class="btn btn-whatsapp btn-sm" onclick="sendWhatsAppBooking(\'' + id + '\')">WhatsApp</button>' +
+    '</div>';
+}
+
+function render() {
+  var app = document.getElementById('app');
+
+  if (!state.authenticated) {
+    app.innerHTML =
+      '<div class="password-screen">' +
+      '<img src="' + LOGO_URL + '" onerror="this.style.display=\'none\'"><h2>TeeBakes</h2><p>Booking Manager</p>' +
+      '<input type="password" id="pass" placeholder="Enter password">' +
+      '<button class="btn btn-primary" onclick="checkPassword()">Unlock</button>' +
+      '</div>';
+    document.getElementById('pass').addEventListener('input', function(e) { state.inputPass = e.target.value; });
+    document.getElementById('pass').addEventListener('keydown', function(e) { if (e.key==='Enter') checkPassword(); });
+    return;
+  }
+
+  var today = new Date();
+  var thisMonth = today.getMonth();
+  var thisYear = today.getFullYear();
+  var total = 0, confirmedTotal = 0, pendingTotal = 0, monthTotal = 0;
+  state.bookings.forEach(function(b) {
+    var p = Number(b.price || 0);
+    total += p;
+    if (b.status === 'confirmed') confirmedTotal += p;
+    if (b.status === 'pending') pendingTotal += p;
+    var parts = b.date.split('-');
+    if (Number(parts[0])===thisYear && Number(parts[1])-1===thisMonth) monthTotal += p;
+  });
+
+  var weekDays = [];
+  for (var i = 0; i < 7; i++) weekDays.push(addDays(state.weekStart, i));
+
+  var html =
+    '<div class="header-bar"><div class="header-logo"><img src="' + LOGO_URL + '" onerror="this.style.display=\'none\'"><div><h1>TeeBakes</h1><p>Booking Manager</p></div></div>' +
+    '<div class="button-group">' +
+    '<button class="btn ' + (state.view==='week' ? 'btn-success' : 'btn-primary') + '" onclick="state.view=\'week\'; saveState()">Week</button>' +
+    '<button class="btn ' + (state.view==='month' ? 'btn-success' : 'btn-primary') + '" onclick="state.view=\'month\'; saveState()">Month</button>' +
+    '<button class="btn btn-info" onclick="exportData()">Backup</button>' +
+    '<label class="btn btn-purple" style="cursor:pointer">Restore <input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>' +
+    '<button class="btn btn-danger" onclick="wipeAllData()">Wipe All Data</button>' +
+    '<button class="btn btn-whatsapp" onclick="state.showWhatsAppList=true; saveState()">WhatsApp Customer</button>' +
+    '<button class="btn" style="background:white;color:#c0175d" onclick="state.showCustomerForm=true; saveState()">+ Add Customer</button>' +
+    '<button class="btn btn-success" onclick="state.showBookingForm=true; saveState()">+ Add Booking</button>' +
+    '</div></div>';
+
+  html +=
+    '<div class="summary-row">' +
+    '<div class="summary-card"><h4>This Month</h4><div style="font-size:1.3rem;font-weight:bold;color:#c0175d">£' + monthTotal.toFixed(2) + '</div><small style="color:#888">All time: £' + total.toFixed(2) + '</small></div>' +
+    '<div class="summary-card"><h4>Confirmed</h4><div style="font-size:1.3rem;font-weight:bold;color:#24963f">£' + confirmedTotal.toFixed(2) + '</div></div>' +
+    '<div class="summary-card"><h4>Pending</h4><div style="font-size:1.3rem;font-weight:bold;color:#e6a817">£' + pendingTotal.toFixed(2) + '</div></div>' +
+    '<div class="summary-card"><h4>Total Bookings</h4><div style="font-size:1.3rem;font-weight:bold">' + state.bookings.length + '</div></div>' +
+    '</div>';
+
+  if (state.view === 'week') {
+    html += '<div class="week-nav">' +
+      '<button class="btn btn-primary" onclick="state.weekStart=addDays(state.weekStart,-7); saveState()">Previous Week</button>' +
+      '<strong>' + formatDate(weekDays[0]) + ' - ' + formatDate(weekDays[6]) + '</strong>' +
+      '<button class="btn btn-primary" onclick="state.weekStart=addDays(state.weekStart,7); saveState()">Next Week</button>' +
+      '</div><div style="overflow-x:auto"><table><thead><tr><th>Date</th><th>Bookings</th></tr></thead><tbody>';
+    weekDays.forEach(function(d) {
+      var dayBookings = state.bookings.filter(function(b){ return b.date===d; });
+      var dayLabel = parseLocal(d).toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'short'});
+      html += '<tr><td style="background:#1a1a2e;color:#f5c518;font-weight:bold;white-space:nowrap;width:160px;padding:0.5rem;border-right:2px solid #f5c518">' + dayLabel + '</td>';
+      html += '<td style="padding:0.4rem">';
+      if (dayBookings.length === 0) {
+        html += '<span style="color:#ccc;font-size:0.8rem">No bookings</span>';
+      } else {
+        dayBookings.forEach(function(b) { html += bookingBlockHTML(b, false); });
+      }
+      html += '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+  } else {
+    var monthDays = getMonthDays(state.month.y, state.month.m);
+    var monthLabel = new Date(state.month.y, state.month.m, 1).toLocaleString('en-GB', {month:'long', year:'numeric'});
+    html += '<div class="week-nav">' +
+      '<button class="btn btn-primary" onclick="state.month.m--; if(state.month.m<0){state.month.m=11;state.month.y--;} saveState()">Previous Month</button>' +
+      '<strong>' + monthLabel + '</strong>' +
+      '<button class="btn btn-primary" onclick="state.month.m++; if(state.month.m>11){state.month.m=0;state.month.y++;} saveState()">Next Month</button>' +
+      '</div><div class="month-grid">';
+    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(d) { html += '<div class="month-day-header">' + d + '</div>'; });
+    monthDays.forEach(function(day) {
+      html += '<div class="month-day' + (day.current ? '' : ' other-month') + '">';
+      html += '<div style="font-weight:bold;margin-bottom:0.2rem">' + parseLocal(day.date).getDate() + '</div>';
+      var count = 0;
+      state.bookings.forEach(function(b) { if (b.date===day.date && count<2) { html += bookingBlockHTML(b,true); count++; } });
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
+  html += '<h3>All Customers</h3>';
+  if (state.customers.length === 0) {
+    html += '<p>No customers yet - click "+ Add Customer" to get started.</p>';
+  } else {
+    html += '<table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Bookings</th><th>Edit</th><th>Delete</th></tr></thead><tbody>';
+    state.customers.forEach(function(c) {
+      var bookingCount = state.bookings.filter(function(b){ return b.customerId===c.id; }).length;
+      html += '<tr><td>' + c.name + '</td><td>' + c.phone + '</td><td>' + (c.email||'-') + '</td><td>' + bookingCount + '</td>' +
+        '<td><button class="btn btn-warning btn-sm" onclick="editCustomer(\'' + c.id + '\')">Edit</button></td>' +
+        '<td><button class="btn btn-danger btn-sm" onclick="deleteCustomer(\'' + c.id + '\')">Delete</button></td></tr>';
+    });
+    html += '</tbody></table>';
+  }
+
+  if (state.showWhatsAppList) {
+    html += '<div class="modal"><div class="modal-content"><h3>WhatsApp Customer</h3>' +
+      '<p style="font-size:0.85rem;color:#666;margin-bottom:0.5rem">Select a customer to send a confirmation:</p>';
+    if (state.customers.length === 0) {
+      html += '<p>No customers added yet.</p>';
+    } else {
+      state.customers.forEach(function(c) {
+        var latestBooking = null;
+        state.bookings.forEach(function(b) { if (b.customerId===c.id && (!latestBooking||b.date>latestBooking.date)) latestBooking=b; });
+        var info = latestBooking ? formatDate(latestBooking.date) + ' - ' + latestBooking.orderDetails.slice(0,20) : 'No bookings yet';
+        html += '<div class="wa-client-row"><div><strong>' + c.name + '</strong><br><small style="color:#888">' + info + '</small></div>' +
+          '<button class="btn btn-whatsapp btn-sm" onclick="sendWhatsAppCustomer(\'' + c.id + '\')">Send</button></div>';
+      });
+    }
+    html += '<div style="text-align:right;margin-top:0.8rem"><button class="btn" onclick="state.showWhatsAppList=false; saveState()">Close</button></div></div></div>';
+  }
+
+  if (state.showCustomerForm) {
+    var f = state.customerForm;
+    html += '<div class="modal"><div class="modal-content">' +
+      '<h3>' + (state.editingCustomer ? 'Edit Customer' : 'Add New Customer') + '</h3>' +
+      '<input type="text"  id="cf_name"  value="' + f.name  + '" placeholder="Full Name *">' +
+      '<input type="tel"   id="cf_phone" value="' + f.phone + '" placeholder="Phone Number *">' +
+      '<input type="email" id="cf_email" value="' + f.email + '" placeholder="Email (optional)">' +
+      '<textarea id="cf_notes" rows="2" placeholder="Notes">' + f.notes + '</textarea>' +
+      '<div style="text-align:right;margin-top:0.8rem">' +
+      '<button class="btn" onclick="state.showCustomerForm=false; saveState()">Cancel</button> ' +
+      '<button class="btn btn-primary" onclick="collectAndSaveCustomer()">Save Customer</button>' +
+      '</div></div></div>';
+  }
+
+  if (state.showBookingForm) {
+    var bf = state.bookingForm;
+    var custOpts = '<option value="">-- Select Customer --</option>';
+    state.customers.forEach(function(c) { custOpts += '<option value="' + c.id + '"' + (c.id===bf.customerId?' selected':'') + '>' + c.name + '</option>'; });
+    html += '<div class="modal"><div class="modal-content">' +
+      '<h3>' + (state.editingBooking ? 'Edit Booking' : 'Add New Booking') + '</h3>' +
+      '<select id="bf_customer">' + custOpts + '</select>' +
+      '<div class="form-row">' +
+      '<div class="form-col"><input type="date" id="bf_date" value="' + bf.date + '"></div>' +
+      '<div class="form-col"><select id="bf_type">' +
+      '<option value="event"' + (bf.type==='event'?' selected':'') + '>Event</option>' +
+      '<option value="popup"' + (bf.type==='popup'?' selected':'') + '>Pop-up</option>' +
+      '</select></div>' +
+      '</div>' +
+      '<textarea id="bf_order" rows="3" placeholder="Order details (e.g. 50 loaded cookies, 2 dozen donuts...)">' + bf.orderDetails + '</textarea>' +
+      '<div class="form-row">' +
+      '<div class="form-col"><input type="number" id="bf_price" step="0.01" min="0" placeholder="Total Price £" value="' + bf.price + '"></div>' +
+      '<div class="form-col"><input type="number" id="bf_deposit" step="0.01" min="0" placeholder="Deposit £" value="' + bf.deposit + '"></div>' +
+      '</div>' +
+      '<select id="bf_status">' +
+      '<option value="pending"' + (bf.status==='pending'?' selected':'') + '>Pending</option>' +
+      '<option value="confirmed"' + (bf.status==='confirmed'?' selected':'') + '>Confirmed</option>' +
+      '<option value="unpaid"' + (bf.status==='unpaid'?' selected':'') + '>Unpaid</option>' +
+      '</select>' +
+      '<textarea id="bf_notes" rows="2" placeholder="Additional notes">' + bf.notes + '</textarea>' +
+      '<div style="text-align:right;margin-top:0.8rem">' +
+      '<button class="btn" onclick="state.showBookingForm=false; saveState()">Cancel</button> ' +
+      '<button class="btn btn-success" onclick="collectAndSaveBooking()">Save Booking</button>' +
+      '</div></div></div>';
+  }
+
+  app.innerHTML = html;
+}
+
+render();
+</script>
+</body>
+</html>
